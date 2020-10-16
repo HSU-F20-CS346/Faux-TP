@@ -47,12 +47,13 @@ Encoding will always be UTF-8 for control keywords and file information.
 | 4 bytes | INT  | length of *.csv |
 | variable| string| *.csv of file info|
 
-Error Codes:
-0: NOERR - No Error
-1: FAILW - Failure to Write
-2: FAILR - Failure to Read
-3: FILEE - File Exists
-4: PERMS - Lack Permissions
+| Error Code  | name | description   |
+|---------|------|---------------|
+| 0 | NOERR  | No Error |
+| 1 | FAILW| Failure to Write|
+| 2 | FAILR  | Failure to Read |
+| 3 | FILEE| File Exists|
+| 4 | PERMS| Lack Permissions|
 
 
 
