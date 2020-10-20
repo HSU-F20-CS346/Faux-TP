@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Terminal.Gui" Version="1.0.0-pre.4" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\FauxTP.Library\FauxTP.Library.csproj" />
   </ItemGroup>
 
