@@ -3,6 +3,7 @@ using System.Data;
 using System.Net;
 using System.Runtime.InteropServices.ComTypes;
 using System.Security.Cryptography.X509Certificates;
+using System.Xml;
 using Terminal.Gui;
 
 namespace FauxTP.Terminal
@@ -23,6 +24,11 @@ namespace FauxTP.Terminal
                     new MenuItem ("_About", "", () =>
                     {
                         OpenAboutDialog ();
+                    }),
+
+                    new MenuItem ("_Options", "", () =>
+                    {
+                        OpenOptionsDialog ();
                     }),
 
                     // Close application
@@ -70,18 +76,19 @@ namespace FauxTP.Terminal
             {
                 X = Pos.Percent(34),
                 Y = 1,
-                Width = Dim.Percent(34),
-                Height = Dim.Fill(),
+                Width = Dim.Percent(66),
+                Height = Dim.Percent(50),
                 ColorScheme = Colors.Base
             };
 
             // Directory view of remote files
             var peerDir = new Window("Peer Directory")
             {
-                X = Pos.Percent(67),
-                Y = 1,
-                Width = Dim.Percent(34),
-                Height = Dim.Fill(),
+                //X = Pos.Percent(67),
+                X = Pos.Percent(34),
+                Y = Pos.Percent(50),
+                Width = Dim.Percent(66),
+                Height = Dim.Percent(50),
                 ColorScheme = Colors.Base
             };
             
@@ -107,16 +114,66 @@ namespace FauxTP.Terminal
             Application.Run();
         }
 
+        static void OpenAboutDialog()
+        {
+            var aboutInfo = new Label(
+                "Project for CS 346 @ HSU \n \n" +
+                "Designed by Vanja Venezia, Riley Heffernan, \n" +
+                "Fernando Crespo, James Pelligra, Candance M., \n" +
+                "Ryan Beck, Grayson Beckert, and Bradley Arline")
+            {
+                X = 1,
+                Y = 1
+            };
+
+            var ok = new Button(20, 7, "Cool!") { };
+            ok.Clicked += () => { Application.RequestStop(); };
+
+            var dialog = new Dialog("Login", 50, 11, ok);
+            dialog.Add(aboutInfo);
+
+            Application.Run(dialog);
+        }
+
+        static void OpenOptionsDialog()
+        {
+            //TODO: Make options functional
+
+            var saveIP = new CheckBox(1, 1, "Save server IP", GlobalBools.saveIP) { };
+            var saveUsername = new CheckBox(1, 3, "Save username", GlobalBools.saveUsername) { };
+            var savePassword = new CheckBox(1, 5, "Save password", GlobalBools.savePassword) { };
+            var saveSession = new CheckBox(1, 7, "Save session history to log", GlobalBools.saveSession) { };
+
+            var clearInfo = new Button(1, 9, "Clear saved information") { };
+            clearInfo.Clicked += () => { ClearSavedUserInfo(); };
+            var closeMenu = new Button(1, 11, "Save and close options menu") { };
+            closeMenu.Clicked += () => { 
+                if (saveIP.Checked) { GlobalBools.saveIP = true; }
+                else { GlobalBools.saveIP = false; };
+                if (saveUsername.Checked) { GlobalBools.saveUsername = true; }
+                else { GlobalBools.saveUsername = false; };
+                if (savePassword.Checked) { GlobalBools.savePassword = true; }
+                else { GlobalBools.savePassword = false; };
+                if (saveSession.Checked) { GlobalBools.saveSession = true; }
+                else { GlobalBools.saveSession = false; };
+                Application.RequestStop(); };
+
+            var dialog = new Dialog("Options", 35, 15, clearInfo, closeMenu);
+            dialog.Add(saveIP, saveUsername, savePassword, saveSession);
+
+            Application.Run(dialog);
+        }
+
         static void OpenLoginDialog()
         {
             bool connectPressed = false;
-            
-            var connect = new Button(16, 11, "Connect") {};
+
+            var connect = new Button(16, 11, "Connect") { };
             connect.Clicked += () => { Application.RequestStop(); connectPressed = true; };
 
-            var cancel = new Button(31, 11, "Cancel") {};
+            var cancel = new Button(31, 11, "Cancel") { };
             cancel.Clicked += () => { Application.RequestStop(); };
-            
+
             var dialog = new Dialog("Login", 60, 15, connect, cancel);
 
             var ipForm = new TextField()
@@ -172,36 +229,14 @@ namespace FauxTP.Terminal
                 //TODO: Add auth logic
             }
         }
-
-        static void OpenAboutDialog()
+        static void CloseConnection()
         {
-            var aboutInfo = new Label(
-                "Project for CS 346 @ HSU \n \n" +
-                "Designed by Vanja Venezia, Riley Heffernan, \n" +
-                "Fernando Crespo, James Pelligra, Candance M., \n" +
-                "Ryan Beck, Grayson Beckert, and Bradley Arline")
-            {
-                X = 1,
-                Y = 1
-            };
-
-            var ok = new Button(20, 7, "Cool!") { };
-            ok.Clicked += () => { Application.RequestStop(); };
-
-            var dialog = new Dialog("Login", 50, 11, ok);
-            dialog.Add(aboutInfo);
-
-            Application.Run(dialog);
+            //TODO: Close connection
         }
 
         static void OpenHelpDialog()
         {
             //TODO: Tutorialize basic features and link to docs in dialog box
-        }
-
-        static void CloseConnection()
-        {
-            //TODO: Close connection
         }
 
         static void DownloadFile()
@@ -232,5 +267,21 @@ namespace FauxTP.Terminal
         {
             //TODO: Cancel transfer
         }
+
+        static void ClearSavedUserInfo()
+        {
+            //TODO: Clear saved user information from config 
+            //      by writing empty strings to config fields
+        }
+    }
+
+    class GlobalBools
+    {
+        //TODO: Load these bool values from config
+
+        public static bool saveIP = false;
+        public static bool saveUsername = false;
+        public static bool savePassword = false;
+        public static bool saveSession = false;
     }
 }
