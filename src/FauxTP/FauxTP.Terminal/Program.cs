@@ -153,20 +153,26 @@ namespace FauxTP.Terminal
         {
             // About information
             var aboutInfo = new Label(
+                "  ______                _______  _____ \n" +
+                " |  ____|              |__   __||  __ \\ \n" +
+                " | |__  __ _  _   _ __  __| |   | |__) | \n" +
+                " |  __|/ _` || | | |\\ \\/ /| |   |  ___/ \n" +
+                " | |  | (_| || |_| | >  < | |   | |     \n" +
+                " |_|   \\__,_| \\__,_|/_/\\_\\|_|   |_|   \n \n" +
                 "Project for CS 346 @ HSU \n \n" +
                 "Designed by Vanja Venezia, Riley Heffernan, \n" +
                 "Fernando Crespo, James Pelligra, Candance M., \n" +
                 "Ryan Beck, Grayson Beckert, and Bradley Arline")
             {
                 X = 1,
-                Y = 1
+                Y = 0
             };
 
             // Close about dialog
-            var ok = new Button(20, 7, "Cool!") { };
+            var ok = new Button(19, 13, "Cool!") { };
             ok.Clicked += () => { Application.RequestStop(); };
 
-            var dialog = new Dialog("Login", 50, 11, ok);
+            var dialog = new Dialog("Login", 50, 16, ok);
             dialog.Add(aboutInfo);
 
             Application.Run(dialog);
