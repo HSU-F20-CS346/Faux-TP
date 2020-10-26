@@ -20,6 +20,7 @@ namespace FauxTP.Terminal
             Colors.Base.Normal = Application.Driver.MakeAttribute(Color.Green, Color.Black);
 
             CheckAndSetGlobalBools();
+            CheckAndSetSavedUserInfo();
 
             // Main menu
             var menu = new MenuBar(new MenuBarItem[]
@@ -130,24 +131,21 @@ namespace FauxTP.Terminal
         {
             string userInfoPath = AppDomain.CurrentDomain.BaseDirectory + "\\user.info";
             string[] userConfiguration = File.ReadAllLines(userInfoPath);
-
             if (userConfiguration.Length > 0)
             {
-                GlobalBools.saveIP = bool.Parse(userConfiguration[0]);
-                GlobalBools.saveUsername = bool.Parse(userConfiguration[1]);
-                GlobalBools.savePassword = bool.Parse(userConfiguration[2]);
-                GlobalBools.saveSession = bool.Parse(userConfiguration[3]);
+                GlobalBools.saveUserInfo = bool.Parse(userConfiguration[0]);
             }
         }
         static void CheckAndSetSavedUserInfo()
         {
-            if (GlobalBools.saveIP == true || GlobalBools.saveUsername == true
-                || GlobalBools.savePassword == true)
+            if (GlobalBools.saveUserInfo == true)
             {
                 string userInfoPath = AppDomain.CurrentDomain.BaseDirectory + "\\user.info";
                 string[] userConfiguration = File.ReadAllLines(userInfoPath);
 
-                if (GlobalBools.saveIP == true) { };
+                UserInfo.serverIP = userConfiguration[1];
+                UserInfo.username = userConfiguration[2];
+                UserInfo.password = userConfiguration[3];
             }
         }
 
@@ -176,34 +174,21 @@ namespace FauxTP.Terminal
 
         static void OpenOptionsDialog()
         {
-            //TODO: Make options functional
+            //TODO: Implement session saving
 
-            var saveIP = new CheckBox(1, 1, "Save server IP", GlobalBools.saveIP) { };
-            var saveUsername = new CheckBox(1, 3, "Save username", GlobalBools.saveUsername) { };
-            var savePassword = new CheckBox(1, 5, "Save password", GlobalBools.savePassword) { };
-            var saveSession = new CheckBox(1, 7, "Save session history to log", GlobalBools.saveSession) { };
-
-            var clearInfo = new Button(1, 9, "Clear saved information") { };
+            var saveUserInfo = new CheckBox(1, 1, "Save User Information", GlobalBools.saveUserInfo) { };
+            var saveSession = new Button(1, 3, "Save session history to log") { };
+            saveSession.Clicked += () => { SaveSessionHistory(); };
+            var clearInfo = new Button(1, 5, "Clear saved information") { };
             clearInfo.Clicked += () => { ClearSavedUserInfo(); };
-            var closeMenu = new Button(1, 11, "Save and close options menu") { };
+            var closeMenu = new Button(1, 7, "Save and close options menu") { };
             closeMenu.Clicked += () => { 
-                if (saveIP.Checked) { GlobalBools.saveIP = true; }
-                else { GlobalBools.saveIP = false; };
-                if (saveUsername.Checked) { GlobalBools.saveUsername = true; }
-                else { GlobalBools.saveUsername = false; };
-                if (savePassword.Checked) { GlobalBools.savePassword = true; }
-                else { GlobalBools.savePassword = false; };
-                if (saveSession.Checked) { GlobalBools.saveSession = true; }
-                else { GlobalBools.saveSession = false; };
+                if (saveUserInfo.Checked) { GlobalBools.saveUserInfo = true; }
+                else { GlobalBools.saveUserInfo = false; };
                 Application.RequestStop(); };
 
-            /*
-            Properties.Settings.Default.something = value;
-            Properties.Settings.Default.Save();
-            */
-
-            var dialog = new Dialog("Options", 35, 15, clearInfo, closeMenu);
-            dialog.Add(saveIP, saveUsername, savePassword, saveSession);
+            var dialog = new Dialog("Options", 35, 11, clearInfo, closeMenu);
+            dialog.Add(saveUserInfo, saveSession);
 
             Application.Run(dialog);
         }
@@ -227,14 +212,16 @@ namespace FauxTP.Terminal
                 X = 1,
                 Y = 2,
                 Width = Dim.Fill(),
-                Height = 1
+                Height = 1,
+                Text = UserInfo.serverIP
             };
             var usernameForm = new TextField()
             {
                 X = 1,
                 Y = 5,
                 Width = Dim.Fill(),
-                Height = 1
+                Height = 1,
+                Text = UserInfo.username
             };
             var passwordForm = new TextField()
             {
@@ -242,7 +229,8 @@ namespace FauxTP.Terminal
                 Y = 8,
                 Width = Dim.Fill(),
                 Height = 1,
-                Secret = true
+                Secret = true,
+                Text = UserInfo.password
             };
 
             var ipLabel = new Label("Server Address")
@@ -272,6 +260,17 @@ namespace FauxTP.Terminal
 
             if (connectPressed)
             {
+                if (GlobalBools.saveUserInfo)
+                {
+                    string userInfoPath = AppDomain.CurrentDomain.BaseDirectory + "/user.info";
+                    string[] userInfo = new string[] { "true", ipForm.Text.ToString(),
+                        usernameForm.Text.ToString(), passwordForm.Text.ToString() };
+                    File.WriteAllLines(userInfoPath, userInfo);
+                    UserInfo.serverIP = ipForm.Text.ToString();
+                    UserInfo.username = usernameForm.Text.ToString();
+                    UserInfo.password = passwordForm.Text.ToString();
+                }
+                
                 //TODO: Add auth logic
             }
         }
@@ -314,28 +313,24 @@ namespace FauxTP.Terminal
             //TODO: Cancel transfer
         }
 
+        static void SaveSessionHistory()
+        {
+            //TODO: Implement session saving
+        }
+
         static void ClearSavedUserInfo()
         {
             string userInfoPath = AppDomain.CurrentDomain.BaseDirectory + "/user.info";
-            File.WriteAllText(userInfoPath, String.Empty);
-
-            /*
-            ConfigurationManager.AppSettings["serverIP"] = "";
-            ConfigurationManager.AppSettings["username"] = "";
-            ConfigurationManager.AppSettings["password"] = "";
-            ConfigurationManager.AppSettings["saveIP"] = "false";
-            ConfigurationManager.AppSettings["saveUsername"] = "false";
-            ConfigurationManager.AppSettings["savePassword"] = "false";
-            ConfigurationManager.AppSettings["saveSession"] = "false";
-            */
+            File.WriteAllText(userInfoPath, "false");
+            UserInfo.serverIP = "";
+            UserInfo.username = "";
+            UserInfo.password = "";
         }
     }
 
     class GlobalBools
     {
-        public static bool saveIP = false;
-        public static bool saveUsername = false;
-        public static bool savePassword = false;
+        public static bool saveUserInfo = false;
         public static bool saveSession = false;
     }
 
