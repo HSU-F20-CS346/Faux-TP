@@ -1,5 +1,9 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Configuration;
 using System.Data;
+using System.IO;
+using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices.ComTypes;
 using System.Security.Cryptography.X509Certificates;
@@ -14,6 +18,8 @@ namespace FauxTP.Terminal
         {
             Application.Init();
             Colors.Base.Normal = Application.Driver.MakeAttribute(Color.Green, Color.Black);
+
+            CheckAndSetGlobalBools();
 
             // Main menu
             var menu = new MenuBar(new MenuBarItem[]
@@ -92,21 +98,27 @@ namespace FauxTP.Terminal
                 ColorScheme = Colors.Base
             };
             
+            // Download file from the connected peer
             var download = new Button(5, 1, "     Download File     ") { };
             download.Clicked += () => { DownloadFile(); };
 
+            // Upload file to the connected peer
             var upload = new Button(5, 3, "      Upload File      ") { };
             upload.Clicked += () => { UploadFile(); };
 
+            // Pause current transfer (if applicable)
             var pause = new Button(5, 5, "     Pause Transfer    ") { };
             pause.Clicked += () => { PauseTransfer(); };
 
+            // Resume current paused transfer (if applicable)
             var resume = new Button(5, 7, "    Resume Transfer    ") { };
             resume.Clicked += () => { ResumeTransfer(); };
 
+            // Cancel current transfer (if applicable)
             var cancel = new Button(5, 9, "    Cancel Transfer    ") { };
             cancel.Clicked += () => { CancelTransfer(); };
 
+            // Compose command window
             fauxtp.Add(download, upload, pause, resume, cancel);
 
             // Add components to application window
@@ -114,8 +126,34 @@ namespace FauxTP.Terminal
             Application.Run();
         }
 
+        static void CheckAndSetGlobalBools()
+        {
+            string userInfoPath = AppDomain.CurrentDomain.BaseDirectory + "\\user.info";
+            string[] userConfiguration = File.ReadAllLines(userInfoPath);
+
+            if (userConfiguration.Length > 0)
+            {
+                GlobalBools.saveIP = bool.Parse(userConfiguration[0]);
+                GlobalBools.saveUsername = bool.Parse(userConfiguration[1]);
+                GlobalBools.savePassword = bool.Parse(userConfiguration[2]);
+                GlobalBools.saveSession = bool.Parse(userConfiguration[3]);
+            }
+        }
+        static void CheckAndSetSavedUserInfo()
+        {
+            if (GlobalBools.saveIP == true || GlobalBools.saveUsername == true
+                || GlobalBools.savePassword == true)
+            {
+                string userInfoPath = AppDomain.CurrentDomain.BaseDirectory + "\\user.info";
+                string[] userConfiguration = File.ReadAllLines(userInfoPath);
+
+                if (GlobalBools.saveIP == true) { };
+            }
+        }
+
         static void OpenAboutDialog()
         {
+            // About information
             var aboutInfo = new Label(
                 "Project for CS 346 @ HSU \n \n" +
                 "Designed by Vanja Venezia, Riley Heffernan, \n" +
@@ -126,6 +164,7 @@ namespace FauxTP.Terminal
                 Y = 1
             };
 
+            // Close about dialog
             var ok = new Button(20, 7, "Cool!") { };
             ok.Clicked += () => { Application.RequestStop(); };
 
@@ -158,6 +197,11 @@ namespace FauxTP.Terminal
                 else { GlobalBools.saveSession = false; };
                 Application.RequestStop(); };
 
+            /*
+            Properties.Settings.Default.something = value;
+            Properties.Settings.Default.Save();
+            */
+
             var dialog = new Dialog("Options", 35, 15, clearInfo, closeMenu);
             dialog.Add(saveIP, saveUsername, savePassword, saveSession);
 
@@ -168,9 +212,11 @@ namespace FauxTP.Terminal
         {
             bool connectPressed = false;
 
+            // Connect to peer with specified information
             var connect = new Button(16, 11, "Connect") { };
             connect.Clicked += () => { Application.RequestStop(); connectPressed = true; };
 
+            // Cancel connect operation
             var cancel = new Button(31, 11, "Cancel") { };
             cancel.Clicked += () => { Application.RequestStop(); };
 
@@ -270,18 +316,33 @@ namespace FauxTP.Terminal
 
         static void ClearSavedUserInfo()
         {
-            //TODO: Clear saved user information from config 
-            //      by writing empty strings to config fields
+            string userInfoPath = AppDomain.CurrentDomain.BaseDirectory + "/user.info";
+            File.WriteAllText(userInfoPath, String.Empty);
+
+            /*
+            ConfigurationManager.AppSettings["serverIP"] = "";
+            ConfigurationManager.AppSettings["username"] = "";
+            ConfigurationManager.AppSettings["password"] = "";
+            ConfigurationManager.AppSettings["saveIP"] = "false";
+            ConfigurationManager.AppSettings["saveUsername"] = "false";
+            ConfigurationManager.AppSettings["savePassword"] = "false";
+            ConfigurationManager.AppSettings["saveSession"] = "false";
+            */
         }
     }
 
     class GlobalBools
     {
-        //TODO: Load these bool values from config
-
         public static bool saveIP = false;
         public static bool saveUsername = false;
         public static bool savePassword = false;
         public static bool saveSession = false;
+    }
+
+    class UserInfo
+    {
+        public static string serverIP = "";
+        public static string username = "";
+        public static string password = "";
     }
 }
