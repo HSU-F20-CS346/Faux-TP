@@ -21,6 +21,7 @@ namespace FauxTP.Terminal
             Application.Init();
             Colors.Base.Normal = Application.Driver.MakeAttribute(Color.Green, Color.Black);
 
+            CheckForConfigFiles();
             CheckAndSetGlobalBools();
             CheckAndSetSavedUserInfo();
             LoadWhiteList();
@@ -128,6 +129,21 @@ namespace FauxTP.Terminal
             // Add components to application window
             Application.Top.Add(menu, fauxtp, localDir, peerDir);
             Application.Run();
+        }
+
+        static void CheckForConfigFiles()
+        {
+            string userInfoPath = AppDomain.CurrentDomain.BaseDirectory + "\\user.info";
+            string whitelistPath = AppDomain.CurrentDomain.BaseDirectory + "\\whitelist.info";
+            if (!File.Exists(userInfoPath))
+            {
+                File.WriteAllText(userInfoPath, "false");
+            }
+            if (!File.Exists(whitelistPath))
+            {
+                File.WriteAllText(whitelistPath, "");
+            }
+
         }
 
         static void CheckAndSetGlobalBools()
