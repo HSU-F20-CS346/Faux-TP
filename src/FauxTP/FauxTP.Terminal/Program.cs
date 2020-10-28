@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Configuration;
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml;
 using Terminal.Gui;
+using FauxTP.Library;
 
 namespace FauxTP.Terminal
 {
@@ -21,6 +23,7 @@ namespace FauxTP.Terminal
 
             CheckAndSetGlobalBools();
             CheckAndSetSavedUserInfo();
+            LoadWhiteList();
 
             // Main menu
             var menu = new MenuBar(new MenuBarItem[]
@@ -146,6 +149,22 @@ namespace FauxTP.Terminal
                 UserInfo.serverIP = userConfiguration[1];
                 UserInfo.username = userConfiguration[2];
                 UserInfo.password = userConfiguration[3];
+            }
+        }
+
+        static void LoadWhiteList()
+        {
+            string whitelistPath = AppDomain.CurrentDomain.BaseDirectory + "\\whitelist.info";
+            string[] whitelist = File.ReadAllLines(whitelistPath);
+            if (whitelist.Length > 0)
+            {
+                for (int i = 0; i < whitelist.Length; i+=2)
+                {
+                    User tempUser = new User();
+                    tempUser.userAddress = whitelist[i];
+                    tempUser.authKey = whitelist[i + 1];
+                    AuthList.UserWhitelist.Add(tempUser);
+                }
             }
         }
 
@@ -276,10 +295,53 @@ namespace FauxTP.Terminal
                     UserInfo.username = usernameForm.Text.ToString();
                     UserInfo.password = passwordForm.Text.ToString();
                 }
-                
-                //TODO: Add auth logic
+
+                Authenticate();
             }
         }
+
+        static void Authenticate()
+        {
+            bool existingUser = false;
+
+            for (int i = 0; i < AuthList.UserWhitelist.Count; i++)
+            {
+                if (UserInfo.serverIP == AuthList.UserWhitelist[i].userAddress)
+                {
+                    UserInfo.authKey = AuthList.UserWhitelist[i].authKey;
+                    existingUser = true;
+                }
+            }
+
+            if (!existingUser)
+            {
+                UserInfo.authKey = FauxTP.Library.Authenticator.SynchronousAuthentication(UserInfo.serverIP, UserInfo.username);
+
+                User currentUser = new User();
+                currentUser.authKey = UserInfo.authKey;
+                currentUser.userAddress = UserInfo.serverIP;
+                AuthList.UserWhitelist.Add(currentUser);
+                WriteWhitelist();
+            }
+        }
+
+        static void WriteWhitelist()
+        {
+            string whitelistPath = AppDomain.CurrentDomain.BaseDirectory + "\\whitelist.info";
+            string[] toWrite = new string[AuthList.UserWhitelist.Count * 2];
+            int i = 0;
+
+            foreach (var existingUser in AuthList.UserWhitelist)
+            {
+                toWrite[i] = existingUser.userAddress;
+                i++;
+                toWrite[i] = existingUser.authKey;
+                i++;
+            }
+
+            File.WriteAllLines(whitelistPath, toWrite);
+        }
+
         static void CloseConnection()
         {
             //TODO: Close connection
@@ -326,11 +388,16 @@ namespace FauxTP.Terminal
 
         static void ClearSavedUserInfo()
         {
+            // Clear saved user info for login
             string userInfoPath = AppDomain.CurrentDomain.BaseDirectory + "/user.info";
             File.WriteAllText(userInfoPath, "false");
             UserInfo.serverIP = "";
             UserInfo.username = "";
             UserInfo.password = "";
+
+            // Clear saved authKey whitelist
+            string whitelistPath = AppDomain.CurrentDomain.BaseDirectory + "\\whitelist.info";
+            File.WriteAllText(whitelistPath, "");
         }
     }
 
@@ -345,5 +412,11 @@ namespace FauxTP.Terminal
         public static string serverIP = "";
         public static string username = "";
         public static string password = "";
+        public static string authKey = "";
+    }
+
+    class AuthList
+    {
+        public static List<User> UserWhitelist = new List<User>();
     }
 }
