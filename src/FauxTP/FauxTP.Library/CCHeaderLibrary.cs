@@ -1,8 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace FauxTP.Library
 {
@@ -14,9 +17,9 @@ namespace FauxTP.Library
     The execution of C&C commands such as pause will be handled elsewhere.
     */
 
-    class RequestHeader
+    public class RequestHeader
     {
-        private static enum requestFlag
+        public enum requestFlag
         {
             NULL = 00, //Null flag
             SEND = 10, //Send file
@@ -30,29 +33,51 @@ namespace FauxTP.Library
             DIRE = 90 //Return a list of all files in the active directory
         }
 
+        //TODO set protection
         requestFlag Flag { get; set; }
         public string FilePath { get; set; }
         public string FileName { get; set; }
-        public string Extension { get; set; }
+        public string FileExtension { get; set; }
     
 
-        RequestHeader(string input = "")
+        RequestHeader(string input = ",,,")
         {
-            //Input string format (UTF8 encoding): length, flags(comma separated), filepath, filename, fileextension
+            //Input string format (UTF8 encoding): flags(comma separated), filepath, filename, fileextension
             //Digest the CSV into a string array
-            string[] csvSplit = input.Split(',');
-            //Assign values
-            int length = csvSplit[0]; //Purpose of length unknown, likely vestigial, possible use in case of multiple flags. No such event should occur. 
-            this.Flag = requestFlag[(int)csvSplit[1]]; //Assumes one flag
-            this.Path = csvSplit[2]; //Needs set protection against '..' exploits
-            this.FileName = csvSplit[3]; //Needs set protections
-            this.FileExtension = csvSplit[4]; //Needs set protections
+            try
+            {
+                string[] csvSplit = input.Split(',');
+                //Assign values
+                this.Flag = Int32.Parse(csvSplit[0]); //Assumes one flag
+                this.FilePath = csvSplit[1]; //Needs set protection against '..' exploits
+                this.FileName = csvSplit[2]; //Needs set protections
+                this.FileExtension = csvSplit[3]; //Needs set protections
+            }
+            catch(IndexOutOfRangeException)
+            {
+                //Not enough arguments in input string. Server responds with FAILR flag
+                //TODO
+            }
+            catch(Exception e)
+            {
+
+            }
+        }
+
+        public string ComposeCsv()
+        {
+            return ((int)Flag).ToString() + ',' + FilePath + ',' + FileName + ',' + FileExtension; 
+        }
+
+        public string FullPath()
+        {
+            return FilePath + FileName + "." + FileExtension;
         }
     }
 
-    class ResponseHeader
+    public class ResponseHeader
     {
-        private static enum responseFlag
+        public static enum responseFlag
         {
             NOERR = 00, //No Error detected
             FAILW = 10, //Failure to Write
@@ -63,13 +88,47 @@ namespace FauxTP.Library
             FILEE = 30, //File exists and overwrite flag not set
             PERMS = 40 //Permissions error
         }
-        responseFlag Flag;
+        //TODO set protection
+        responseFlag Flag { get; set; }
+        int DatagramSize { get; set; }
 
+        ResponseHeader(string input = ",")
+        {
+            //Input string format (UTF8 encoding): flags(comma separated), filepath, filename, fileextension
+            //Digest the CSV into a string array
+            try
+            {
+                string[] csvSplit = input.Split(',');
+                //Assign values
+                this.Flag = Int32.Parse(csvSplit[0]); //Assumes one flag
+                this.DatagramSize = Int32.Parse(csvSplit[1]); //Default value 0 if error
+            }
+            catch (IndexOutOfRangeException)
+            {
+                //TODO
+            }
+            catch(Exception e)
+            {
+                //TODO
+            }
+        }
+
+        public string ComposeCsv()
+        {
+            return ((int)Flag).ToString() + ',' + (DatagramSize.ToString());
+        }
     }
 
-    class EOFHeader : IControlHeader
+    public class EOFHeader
     {
+        //TODO set protection
+        public byte[] HashValue { get; set; }
+        //TODO implement MD5 hash check and find reliable way to transfer MD5 object across wire
 
+        EOFHeader(string input = ",,,")
+        {
+            //TODO
+        }
     }
 
 
