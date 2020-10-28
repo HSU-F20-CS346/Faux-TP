@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -11,17 +11,16 @@ namespace FauxTP.Library
 {
     //log in and then if requesting file enter in IP address
 
-
-    class Authenticator
+    public class Authenticator
     {
-        public int ListenPort { get; set; }
+        public static int ListenPort { get; set; }
         public bool IsRunning { get; private set; }
 
         private Thread _receivingThread = null;
 
-        public Dictionary<string, User> Whitelist { get; private set; }
+        public static Dictionary<string, User> Whitelist { get; set; }
 
-        public string SynchronousAuthentication(string address, String Uname)
+        public static string SynchronousAuthentication(string address, String Uname)
         {
             //string to return
             string authString = null;
@@ -149,4 +148,3 @@ namespace FauxTP.Library
     }
 
 }
-
