@@ -18,7 +18,7 @@ namespace FauxTP.Library
 
         private Thread _receivingThread = null;
 
-        static Dictionary<string, User> Whitelist { get; set; }
+        public static Dictionary<string, User> Whitelist { get; set; }
 
         public static string SynchronousAuthentication(string address, String Uname)
         {
