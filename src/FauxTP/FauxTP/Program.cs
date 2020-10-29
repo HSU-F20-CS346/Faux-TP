@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Runtime.InteropServices;
+using FauxTP.Library;
 
 namespace FauxTP
 {
@@ -6,7 +8,9 @@ namespace FauxTP
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            RequestHeader testHead = new TestHead();
+            testHead.Flag = 20;
+            Console.WriteLine(testHead.Flag);
         }
     }
 }
