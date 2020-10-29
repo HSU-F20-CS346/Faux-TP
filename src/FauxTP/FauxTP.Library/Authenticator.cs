@@ -43,6 +43,7 @@ namespace FauxTP.Library
                     int authKeyLength = IPAddress.NetworkToHostOrder(reader.ReadInt32());
                     byte[] authKeyBytes = reader.ReadBytes(authKeyLength);
                     authString = Encoding.UTF8.GetString(authKeyBytes);
+                    AuthenticationKeyPass.authKey = authString;
 
                     string ipAddress = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
                     User user = new User()
@@ -145,6 +146,10 @@ namespace FauxTP.Library
             }
             return Convert.ToBase64String(key);
         }
+    }
+    public class AuthenticationKeyPass
+    {
+        public static string authKey = "";
     }
 
 }
