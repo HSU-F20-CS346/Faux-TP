@@ -4,6 +4,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Numerics;
+using FauxTP;
+
 
 
 namespace FauxTP.Library
@@ -38,10 +41,6 @@ namespace FauxTP.Library
                 file.FileName = filePath;
                 file.Flag = rileysFlag;
 
-
-
-
-
                 //Port will always be 3462 for Data sending operations.
                 int port = 3462;
 
@@ -54,15 +53,16 @@ namespace FauxTP.Library
                 String defaultReturn = "DefaultOperationReturn";
                 byte[] defaultReturnBytes = Encoding.UTF8.GetBytes(defaultReturn);
 
-
+                BigInteger key = new BigInteger();
+                key = BigInteger.Parse(AuthenticationKeyPass.authKey);
 
                 switch (file.Flag)
                 {
                     case "SEND":
                         //In the send function the File.ReadAllText is reading the file within the filePath (file.FileName)
                         //Than the file is converted into bytes and sent through the binary writer. 
-                        String fileString = File.ReadAllText(file.FileName); 
-                        file.FileContents = Encoding.UTF8.GetBytes(fileString);
+                        String fileString = File.ReadAllText(file.FileName);
+                        file.FileContents = encrypt(Encoding.UTF8.GetBytes(fileString), key);
                         writer.Write(IPAddress.HostToNetworkOrder(file.FileContents.Length));
                         writer.Write(file.FileContents);
                         break;
@@ -72,7 +72,7 @@ namespace FauxTP.Library
                         //For right now we are downloading the files to the System.AppDomain.CurrentDomain.BaseDirectory and not accounting for any subfolders. Which may come in the future
                         String recvFile;
                         int recvFileLength = IPAddress.NetworkToHostOrder(reader.ReadInt32());
-                        file.FileContents = reader.ReadBytes(recvFileLength);
+                        file.FileContents = encrypt(reader.ReadBytes(recvFileLength), key);
                         recvFile = Encoding.UTF8.GetString(file.FileContents);
                         //TODO: download the file to the default System.AppDomain.CurrentDomain.BaseDirectory
                         //Note this will include rebuilding the file from bytes into strings than into file type
@@ -81,10 +81,26 @@ namespace FauxTP.Library
                 }
 
             }
+
             catch(Exception e)
             {
                 Console.WriteLine("Error: {0}", e.Message);
                 throw e;
+            }
+
+
+            //Big S/O to Jordan for the function below 
+            static byte[] encrypt(byte[] msg, BigInteger key)
+            {
+                string k = key.ToString();
+                byte[] messageBytes = msg;
+                byte[] keyBytes = Encoding.UTF8.GetBytes(k);
+                for (int i = 0; i < messageBytes.Length; i++)
+                {
+                    messageBytes[i] ^= keyBytes[i % keyBytes.Length];
+                }
+
+                return messageBytes;
             }
 
         }
