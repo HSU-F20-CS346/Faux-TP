@@ -207,7 +207,7 @@ namespace FauxTP.Terminal
             var ok = new Button(19, 13, "Cool!") { };
             ok.Clicked += () => { Application.RequestStop(); };
 
-            var dialog = new Dialog("Login", 50, 16, ok);
+            var dialog = new Dialog("About", 50, 16, ok);
             dialog.Add(aboutInfo);
 
             Application.Run(dialog);
@@ -423,7 +423,7 @@ namespace FauxTP.Terminal
         public static bool saveSession = false;
     }
 
-    class UserInfo
+    public class UserInfo
     {
         public static string serverIP = "";
         public static string username = "";
