@@ -197,17 +197,18 @@ namespace FauxTP.Terminal
                 "Project for CS 346 @ HSU \n \n" +
                 "Designed by Vanja Venezia, Riley Heffernan, \n" +
                 "Fernando Crespo, James Pelligra, Candance M., \n" +
-                "Ryan Beck, Grayson Beckert, and Bradley Arline")
+                "Ryan Beck, Grayson Beckert, Bradley Arline, \n" +
+                "and Sylvester")
             {
                 X = 1,
                 Y = 0
             };
 
             // Close about dialog
-            var ok = new Button(19, 13, "Cool!") { };
+            var ok = new Button(19, 14, "Cool!") { };
             ok.Clicked += () => { Application.RequestStop(); };
 
-            var dialog = new Dialog("About", 50, 16, ok);
+            var dialog = new Dialog("About", 50, 17, ok);
             dialog.Add(aboutInfo);
 
             Application.Run(dialog);
@@ -364,8 +365,31 @@ namespace FauxTP.Terminal
         }
 
         static void OpenHelpDialog()
-        {
-            //TODO: Tutorialize basic features and link to docs in dialog box
+        {    
+            // Help information
+            var aboutInfo = new Label("To use FauxTP, first Login via the Connect menu. \n \n"
+                + "If you would like your login information to be saved, please select \n"
+                + "\"Save User Information\" in the Options menu before logging in. \n \n"
+                + "If you would like to clear your saved login information, \n"
+                + "please select \"Clear saved information\" in the Options menu. \n \n"
+                + "NOTE: Clearing saved user information also fully clears the local \n"
+                + "IP whitelist, so new authorization keys will be generated for known \n"
+                + "connections. \n \n"
+                + "Session history (log of each action taken in client) can be saved with \n"
+                + "the button in Options \n")
+            {
+                X = 1,
+                Y = 0
+            };
+
+            // Close help dialog
+            var ok = new Button(32, 15, "Cool!") { };
+            ok.Clicked += () => { Application.RequestStop(); };
+
+            var dialog = new Dialog("Help", 76, 18, ok);
+            dialog.Add(aboutInfo);
+
+            Application.Run(dialog);
         }
 
         static void DownloadFile()
